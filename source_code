@@ -34,7 +34,7 @@ namespace ImageCompression
 
             // Set the JPEG compression level (0-100, with 100 being the highest quality)
             EncoderParameters encoderParams = new EncoderParameters();
-            encoderParams.Param[0] = new EncoderParameter(Encoder.Quality, 80L);
+            encoderParams.Param[0] = new EncoderParameter(Encoder.Quality, 99L);
 
             // Create a memory stream to hold the compressed image data
             System.IO.MemoryStream ms = new System.IO.MemoryStream();
@@ -54,11 +54,11 @@ namespace ImageCompression
             }
 
             // If the compressed image is too large, reduce the JPEG compression level and try again
-            int compressionLevel = 70; // Starting compression level
+            int compressionLevel = 98; // Starting compression level
             while (ms.Length > desiredFileSizeBytes && compressionLevel > 0)
             {
                 // Decrease the JPEG compression level
-                compressionLevel -= 10;
+                compressionLevel--;
                 encoderParams.Param[0] = new EncoderParameter(Encoder.Quality, compressionLevel);
 
                 // Reset the memory stream position and save the compressed image with the new compression level
@@ -85,6 +85,12 @@ namespace ImageCompression
                 }
             }
             return null;
+        }
+
+        // Set the program window title
+        static Program()
+        {
+            Console.Title = "Image Compressor by binesheb";
         }
     }
 }
