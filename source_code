@@ -61,7 +61,8 @@ namespace ImageCompression
                 compressionLevel--;
                 encoderParams.Param[0] = new EncoderParameter(Encoder.Quality, compressionLevel);
 
-                // Reset the memory stream position and save the compressed image with the new compression level
+                // Clear the previous encoded image before saving the next attempt
+                ms.SetLength(0);
                 ms.Position = 0;
                 sourceImage.Save(ms, GetEncoderInfo("image/jpeg"), encoderParams);
             }
