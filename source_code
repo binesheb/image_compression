@@ -33,7 +33,8 @@ namespace ImageCompression
             Bitmap sourceImage = new Bitmap(sourceImagePath);
 
             // Set the JPEG compression level (0-100, with 100 being the highest quality)
-            EncoderParameters encoderParams = new EncoderParameters();
+            // EncoderParameters must be created with one slot before Param[0] can be assigned.
+            EncoderParameters encoderParams = new EncoderParameters(1);
             encoderParams.Param[0] = new EncoderParameter(Encoder.Quality, 99L);
 
             // Create a memory stream to hold the compressed image data
