@@ -86,7 +86,8 @@ namespace ImageCompression
                     return codec;
                 }
             }
-            return null;
+
+            throw new InvalidOperationException($"No image encoder is available for MIME type '{mimeType}'.");
         }
 
         // Set the program window title
