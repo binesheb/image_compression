@@ -24,7 +24,11 @@ namespace ImageCompression
 
             // Prompt the user to enter the desired file size in kilobytes (KB)
             Console.Write("Enter the desired file size in KB: ");
-            long desiredFileSizeKB = long.Parse(Console.ReadLine());
+            if (!long.TryParse(Console.ReadLine(), out long desiredFileSizeKB) || desiredFileSizeKB <= 0)
+            {
+                Console.WriteLine("Please enter a positive whole number of kilobytes.");
+                return;
+            }
 
             // Convert the desired file size to bytes
             long desiredFileSizeBytes = desiredFileSizeKB * 1024;
