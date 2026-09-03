@@ -1,6 +1,6 @@
 # Update and maintenance policy
 
-`image_compression` is currently a minimal project placeholder. As implementation is added, use GitHub `main` as the single source of truth.
+`image_compression` is currently a minimal Windows image-compression utility. GitHub `main` is the single source of truth.
 
 ## Manual update
 
@@ -16,7 +16,7 @@ Do not pull automatic updates from feature or development branches.
 
 ## Automatic updates
 
-A self-updater is not added yet because this repository does not currently contain a runnable application or reusable runtime tool. If the project becomes an installable application, its updater must fetch only `origin/main`, refuse local changes or diverged history, synchronize dependencies from the declared manifest/lock file, validate the updated build, and preserve a known-good revision for recovery.
+A self-updater is not added yet. The utility is a small source-level prototype without a packaged, signed release artifact. If it becomes an installable application, its updater must fetch only `origin/main`, refuse local changes or diverged history, synchronize dependencies from the declared manifest/lock file, validate the updated build, and preserve a known-good revision for recovery.
 
 ## Dependency policy
 
