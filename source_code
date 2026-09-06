@@ -30,8 +30,15 @@ namespace ImageCompression
                 return;
             }
 
-            // Convert the desired file size to bytes
-            long desiredFileSizeBytes = desiredFileSizeKB * 1024;
+            // Convert the desired file size to bytes without allowing a long overflow.
+            const long bytesPerKilobyte = 1024;
+            if (desiredFileSizeKB > long.MaxValue / bytesPerKilobyte)
+            {
+                Console.WriteLine("The requested file size is too large.");
+                return;
+            }
+
+            long desiredFileSizeBytes = desiredFileSizeKB * bytesPerKilobyte;
 
             // Load the source image from file
             Bitmap sourceImage = new Bitmap(sourceImagePath);
