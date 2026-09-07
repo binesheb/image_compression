@@ -79,11 +79,19 @@ namespace ImageCompression
                 sourceImage.Save(ms, GetEncoderInfo("image/jpeg"), encoderParams);
             }
 
-            // Save the final compressed image to the output file
+            // Save the best available compressed image even when the target could not be reached.
             Console.Write("Enter the output file path: ");
             string outputImagePath = Console.ReadLine();
             System.IO.File.WriteAllBytes(outputImagePath, ms.ToArray());
-            Console.WriteLine($"Image compression complete. Output file size: {ms.Length / 1024} KB.");
+
+            if (ms.Length <= desiredFileSizeBytes)
+            {
+                Console.WriteLine($"Image compression complete. Output file size: {ms.Length / 1024} KB.");
+            }
+            else
+            {
+                Console.WriteLine($"Target size could not be reached with the available JPEG quality range. Best available output size: {ms.Length / 1024} KB.");
+            }
         }
 
         // Helper method to get the JPEG encoder information
