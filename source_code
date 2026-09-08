@@ -41,15 +41,15 @@ namespace ImageCompression
             long desiredFileSizeBytes = desiredFileSizeKB * bytesPerKilobyte;
 
             // Load the source image from file
-            Bitmap sourceImage = new Bitmap(sourceImagePath);
+            using Bitmap sourceImage = new Bitmap(sourceImagePath);
 
             // Set the JPEG compression level (0-100, with 100 being the highest quality)
             // EncoderParameters must be created with one slot before Param[0] can be assigned.
-            EncoderParameters encoderParams = new EncoderParameters(1);
+            using EncoderParameters encoderParams = new EncoderParameters(1);
             encoderParams.Param[0] = new EncoderParameter(Encoder.Quality, 99L);
 
             // Create a memory stream to hold the compressed image data
-            System.IO.MemoryStream ms = new System.IO.MemoryStream();
+            using System.IO.MemoryStream ms = new System.IO.MemoryStream();
 
             // Save the compressed image to the memory stream
             sourceImage.Save(ms, GetEncoderInfo("image/jpeg"), encoderParams);
