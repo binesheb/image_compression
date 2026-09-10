@@ -22,6 +22,12 @@ namespace ImageCompression
                 sourceImagePath = Console.ReadLine();
             }
 
+            if (string.IsNullOrWhiteSpace(sourceImagePath) || !System.IO.File.Exists(sourceImagePath))
+            {
+                Console.WriteLine("The input image file could not be found. Please provide a valid file path.");
+                return;
+            }
+
             // Prompt the user to enter the desired file size in kilobytes (KB)
             Console.Write("Enter the desired file size in KB: ");
             if (!long.TryParse(Console.ReadLine(), out long desiredFileSizeKB) || desiredFileSizeKB <= 0)
