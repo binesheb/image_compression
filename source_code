@@ -60,6 +60,12 @@ namespace ImageCompression
                 // The compressed image is already within the desired file size range, so save it to the output file and exit
                 Console.Write("Enter the output file path: ");
                 string outputImagePath = Console.ReadLine();
+                if (IsSameFilePath(sourceImagePath, outputImagePath))
+                {
+                    Console.WriteLine("The output file must be different from the source image.");
+                    return;
+                }
+
                 System.IO.File.WriteAllBytes(outputImagePath, ms.ToArray());
                 Console.WriteLine($"Image compression complete. Output file size: {ms.Length / 1024} KB.");
                 return;
@@ -82,6 +88,12 @@ namespace ImageCompression
             // Save the best available compressed image even when the target could not be reached.
             Console.Write("Enter the output file path: ");
             string outputImagePath = Console.ReadLine();
+            if (IsSameFilePath(sourceImagePath, outputImagePath))
+            {
+                Console.WriteLine("The output file must be different from the source image.");
+                return;
+            }
+
             System.IO.File.WriteAllBytes(outputImagePath, ms.ToArray());
 
             if (ms.Length <= desiredFileSizeBytes)
@@ -92,6 +104,18 @@ namespace ImageCompression
             {
                 Console.WriteLine($"Target size could not be reached with the available JPEG quality range. Best available output size: {ms.Length / 1024} KB.");
             }
+        }
+
+        private static bool IsSameFilePath(string sourceImagePath, string outputImagePath)
+        {
+            if (string.IsNullOrWhiteSpace(outputImagePath))
+            {
+                return false;
+            }
+
+            string sourceFullPath = System.IO.Path.GetFullPath(sourceImagePath);
+            string outputFullPath = System.IO.Path.GetFullPath(outputImagePath);
+            return string.Equals(sourceFullPath, outputFullPath, StringComparison.OrdinalIgnoreCase);
         }
 
         // Helper method to get the JPEG encoder information
