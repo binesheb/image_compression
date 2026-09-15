@@ -17,12 +17,16 @@ namespace ImageCompression
             }
             else
             {
-                // Otherwise, prompt the user to enter the input file path
                 Console.Write("Enter the input file path: ");
                 sourceImagePath = Console.ReadLine();
             }
 
-            // Prompt the user to enter the desired file size in kilobytes (KB)
+            if (string.IsNullOrWhiteSpace(sourceImagePath))
+            {
+                Console.WriteLine("Please provide an input image path.");
+                return;
+            }
+
             Console.Write("Enter the desired file size in KB: ");
             if (!long.TryParse(Console.ReadLine(), out long desiredFileSizeKB) || desiredFileSizeKB <= 0)
             {
@@ -30,7 +34,6 @@ namespace ImageCompression
                 return;
             }
 
-            // Convert the desired file size to bytes without allowing a long overflow.
             const long bytesPerKilobyte = 1024;
             if (desiredFileSizeKB > long.MaxValue / bytesPerKilobyte)
             {
@@ -40,61 +43,38 @@ namespace ImageCompression
 
             long desiredFileSizeBytes = desiredFileSizeKB * bytesPerKilobyte;
 
-            // Load the source image from file
             using Bitmap sourceImage = new Bitmap(sourceImagePath);
-
-            // Set the JPEG compression level (0-100, with 100 being the highest quality)
-            // EncoderParameters must be created with one slot before Param[0] can be assigned.
             using EncoderParameters encoderParams = new EncoderParameters(1);
             encoderParams.Param[0] = new EncoderParameter(Encoder.Quality, 99L);
-
-            // Create a memory stream to hold the compressed image data
             using System.IO.MemoryStream ms = new System.IO.MemoryStream();
 
-            // Save the compressed image to the memory stream
             sourceImage.Save(ms, GetEncoderInfo("image/jpeg"), encoderParams);
 
-            // Check if the compressed image size is within the desired range
+            Console.Write("Enter the output file path: ");
+            string outputImagePath = Console.ReadLine();
+            if (!TryGetOutputPath(sourceImagePath, outputImagePath, out string validatedOutputPath))
+            {
+                return;
+            }
+
             if (ms.Length <= desiredFileSizeBytes)
             {
-                // The compressed image is already within the desired file size range, so save it to the output file and exit
-                Console.Write("Enter the output file path: ");
-                string outputImagePath = Console.ReadLine();
-                if (IsSameFilePath(sourceImagePath, outputImagePath))
-                {
-                    Console.WriteLine("The output file must be different from the source image.");
-                    return;
-                }
-
-                System.IO.File.WriteAllBytes(outputImagePath, ms.ToArray());
+                System.IO.File.WriteAllBytes(validatedOutputPath, ms.ToArray());
                 Console.WriteLine($"Image compression complete. Output file size: {ms.Length / 1024} KB.");
                 return;
             }
 
-            // If the compressed image is too large, reduce the JPEG compression level and try again
-            int compressionLevel = 98; // Starting compression level
+            int compressionLevel = 98;
             while (ms.Length > desiredFileSizeBytes && compressionLevel > 0)
             {
-                // Decrease the JPEG compression level
                 compressionLevel--;
                 encoderParams.Param[0] = new EncoderParameter(Encoder.Quality, compressionLevel);
-
-                // Clear the previous encoded image before saving the next attempt
                 ms.SetLength(0);
                 ms.Position = 0;
                 sourceImage.Save(ms, GetEncoderInfo("image/jpeg"), encoderParams);
             }
 
-            // Save the best available compressed image even when the target could not be reached.
-            Console.Write("Enter the output file path: ");
-            string outputImagePath = Console.ReadLine();
-            if (IsSameFilePath(sourceImagePath, outputImagePath))
-            {
-                Console.WriteLine("The output file must be different from the source image.");
-                return;
-            }
-
-            System.IO.File.WriteAllBytes(outputImagePath, ms.ToArray());
+            System.IO.File.WriteAllBytes(validatedOutputPath, ms.ToArray());
 
             if (ms.Length <= desiredFileSizeBytes)
             {
@@ -106,19 +86,41 @@ namespace ImageCompression
             }
         }
 
-        private static bool IsSameFilePath(string sourceImagePath, string outputImagePath)
+        private static bool TryGetOutputPath(string sourceImagePath, string outputImagePath, out string validatedOutputPath)
         {
+            validatedOutputPath = string.Empty;
+
             if (string.IsNullOrWhiteSpace(outputImagePath))
             {
+                Console.WriteLine("Please provide an output file path.");
                 return false;
             }
 
-            string sourceFullPath = System.IO.Path.GetFullPath(sourceImagePath);
-            string outputFullPath = System.IO.Path.GetFullPath(outputImagePath);
-            return string.Equals(sourceFullPath, outputFullPath, StringComparison.OrdinalIgnoreCase);
+            try
+            {
+                string sourceFullPath = System.IO.Path.GetFullPath(sourceImagePath);
+                string outputFullPath = System.IO.Path.GetFullPath(outputImagePath);
+                if (string.Equals(sourceFullPath, outputFullPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.WriteLine("The output file must be different from the source image.");
+                    return false;
+                }
+
+                validatedOutputPath = outputFullPath;
+                return true;
+            }
+            catch (ArgumentException)
+            {
+                Console.WriteLine("Please provide a valid output file path.");
+                return false;
+            }
+            catch (NotSupportedException)
+            {
+                Console.WriteLine("The output file path is not supported.");
+                return false;
+            }
         }
 
-        // Helper method to get the JPEG encoder information
         private static ImageCodecInfo GetEncoderInfo(string mimeType)
         {
             ImageCodecInfo[] codecs = ImageCodecInfo.GetImageEncoders();
@@ -133,7 +135,6 @@ namespace ImageCompression
             throw new InvalidOperationException($"No image encoder is available for MIME type '{mimeType}'.");
         }
 
-        // Set the program window title
         static Program()
         {
             Console.Title = "Image Compressor by binesheb";
