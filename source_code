@@ -106,6 +106,19 @@ namespace ImageCompression
                     return false;
                 }
 
+                if (System.IO.File.Exists(outputFullPath))
+                {
+                    Console.WriteLine("The output file already exists. Choose a different output path to avoid overwriting it.");
+                    return false;
+                }
+
+                string? outputDirectory = System.IO.Path.GetDirectoryName(outputFullPath);
+                if (!string.IsNullOrEmpty(outputDirectory) && !System.IO.Directory.Exists(outputDirectory))
+                {
+                    Console.WriteLine("The output directory does not exist.");
+                    return false;
+                }
+
                 validatedOutputPath = outputFullPath;
                 return true;
             }
