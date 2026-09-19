@@ -27,6 +27,12 @@ namespace ImageCompression
                 return;
             }
 
+            if (!System.IO.File.Exists(sourceImagePath))
+            {
+                Console.WriteLine("The input image file does not exist.");
+                return;
+            }
+
             Console.Write("Enter the desired file size in KB: ");
             if (!long.TryParse(Console.ReadLine(), out long desiredFileSizeKB) || desiredFileSizeKB <= 0)
             {
