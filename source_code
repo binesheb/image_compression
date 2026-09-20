@@ -49,46 +49,64 @@ namespace ImageCompression
 
             long desiredFileSizeBytes = desiredFileSizeKB * bytesPerKilobyte;
 
-            using Bitmap sourceImage = new Bitmap(sourceImagePath);
-            using EncoderParameters encoderParams = new EncoderParameters(1);
-            encoderParams.Param[0] = new EncoderParameter(Encoder.Quality, 99L);
-            using System.IO.MemoryStream ms = new System.IO.MemoryStream();
-
-            sourceImage.Save(ms, GetEncoderInfo("image/jpeg"), encoderParams);
-
-            Console.Write("Enter the output file path: ");
-            string outputImagePath = Console.ReadLine();
-            if (!TryGetOutputPath(sourceImagePath, outputImagePath, out string validatedOutputPath))
+            Bitmap sourceImage;
+            try
             {
+                sourceImage = new Bitmap(sourceImagePath);
+            }
+            catch (ArgumentException)
+            {
+                Console.WriteLine("The input file is not a supported or valid image.");
+                return;
+            }
+            catch (OutOfMemoryException)
+            {
+                Console.WriteLine("The input image could not be loaded. It may be corrupt or too large.");
                 return;
             }
 
-            if (ms.Length <= desiredFileSizeBytes)
+            using (sourceImage)
+            using (EncoderParameters encoderParams = new EncoderParameters(1))
+            using (System.IO.MemoryStream ms = new System.IO.MemoryStream())
             {
-                System.IO.File.WriteAllBytes(validatedOutputPath, ms.ToArray());
-                Console.WriteLine($"Image compression complete. Output file size: {ms.Length / 1024} KB.");
-                return;
-            }
+                encoderParams.Param[0] = new EncoderParameter(Encoder.Quality, 99L);
 
-            int compressionLevel = 98;
-            while (ms.Length > desiredFileSizeBytes && compressionLevel > 0)
-            {
-                compressionLevel--;
-                encoderParams.Param[0] = new EncoderParameter(Encoder.Quality, compressionLevel);
-                ms.SetLength(0);
-                ms.Position = 0;
                 sourceImage.Save(ms, GetEncoderInfo("image/jpeg"), encoderParams);
-            }
 
-            System.IO.File.WriteAllBytes(validatedOutputPath, ms.ToArray());
+                Console.Write("Enter the output file path: ");
+                string outputImagePath = Console.ReadLine();
+                if (!TryGetOutputPath(sourceImagePath, outputImagePath, out string validatedOutputPath))
+                {
+                    return;
+                }
 
-            if (ms.Length <= desiredFileSizeBytes)
-            {
-                Console.WriteLine($"Image compression complete. Output file size: {ms.Length / 1024} KB.");
-            }
-            else
-            {
-                Console.WriteLine($"Target size could not be reached with the available JPEG quality range. Best available output size: {ms.Length / 1024} KB.");
+                if (ms.Length <= desiredFileSizeBytes)
+                {
+                    System.IO.File.WriteAllBytes(validatedOutputPath, ms.ToArray());
+                    Console.WriteLine($"Image compression complete. Output file size: {ms.Length / 1024} KB.");
+                    return;
+                }
+
+                int compressionLevel = 98;
+                while (ms.Length > desiredFileSizeBytes && compressionLevel > 0)
+                {
+                    compressionLevel--;
+                    encoderParams.Param[0] = new EncoderParameter(Encoder.Quality, compressionLevel);
+                    ms.SetLength(0);
+                    ms.Position = 0;
+                    sourceImage.Save(ms, GetEncoderInfo("image/jpeg"), encoderParams);
+                }
+
+                System.IO.File.WriteAllBytes(validatedOutputPath, ms.ToArray());
+
+                if (ms.Length <= desiredFileSizeBytes)
+                {
+                    Console.WriteLine($"Image compression complete. Output file size: {ms.Length / 1024} KB.");
+                }
+                else
+                {
+                    Console.WriteLine($"Target size could not be reached with the available JPEG quality range. Best available output size: {ms.Length / 1024} KB.");
+                }
             }
         }
 
