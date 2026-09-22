@@ -82,8 +82,7 @@ namespace ImageCompression
 
                 if (ms.Length <= desiredFileSizeBytes)
                 {
-                    System.IO.File.WriteAllBytes(validatedOutputPath, ms.ToArray());
-                    Console.WriteLine($"Image compression complete. Output file size: {ms.Length / 1024} KB.");
+                    TryWriteOutput(validatedOutputPath, ms.ToArray(), ms.Length);
                     return;
                 }
 
@@ -97,17 +96,29 @@ namespace ImageCompression
                     sourceImage.Save(ms, GetEncoderInfo("image/jpeg"), encoderParams);
                 }
 
-                System.IO.File.WriteAllBytes(validatedOutputPath, ms.ToArray());
-
-                if (ms.Length <= desiredFileSizeBytes)
-                {
-                    Console.WriteLine($"Image compression complete. Output file size: {ms.Length / 1024} KB.");
-                }
-                else
-                {
-                    Console.WriteLine($"Target size could not be reached with the available JPEG quality range. Best available output size: {ms.Length / 1024} KB.");
-                }
+                TryWriteOutput(validatedOutputPath, ms.ToArray(), ms.Length);
             }
+        }
+
+        private static bool TryWriteOutput(string outputPath, byte[] imageBytes, long outputSize)
+        {
+            try
+            {
+                System.IO.File.WriteAllBytes(outputPath, imageBytes);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Console.WriteLine("The output file could not be written because access was denied.");
+                return false;
+            }
+            catch (System.IO.IOException)
+            {
+                Console.WriteLine("The output file could not be written because of a file-system error.");
+                return false;
+            }
+
+            Console.WriteLine($"Image compression complete. Output file size: {outputSize / 1024} KB.");
+            return true;
         }
 
         private static bool TryGetOutputPath(string sourceImagePath, string outputImagePath, out string validatedOutputPath)
