@@ -93,6 +93,7 @@ namespace ImageCompression
                 while (ms.Length > desiredFileSizeBytes && compressionLevel > 0)
                 {
                     compressionLevel--;
+                    encoderParams.Param[0].Dispose();
                     encoderParams.Param[0] = new EncoderParameter(Encoder.Quality, compressionLevel);
                     ms.SetLength(0);
                     ms.Position = 0;
